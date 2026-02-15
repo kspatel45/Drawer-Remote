@@ -3,242 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simplified Drawer Control (Phone)</title>
-    <!-- Load Tailwind CSS for simple styling -->
+    <title>UP Vision Drawer Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4159833368007973"
+     crossorigin="anonymous"></script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             background-color: #f7f9fc;
+            padding-bottom: 120px; /* Space for Ad and Footer */
+        }
+        /* Fixed Ad Container */
+        #ad-bottom-container {
+            position: fixed;
+            bottom: 40px; /* Sits above the footer */
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            padding: 5px 0;
+            z-index: 999;
+        }
+        /* Fixed Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #1e40af; /* Blue-800 */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 1000;
+        }
+        .logo-container img {
+            max-width: 120px;
+            margin: 0 auto 1rem;
         }
     </style>
 </head>
 <body>
     <div id="app" class="w-full max-w-sm p-6 bg-white rounded-xl shadow-2xl space-y-6 m-4">
+        <div class="logo-container text-center">
+            <img src="https://kspatel45.github.io/Drawer-Remote/logo.png" alt="UP Vision Logo">
+        </div>
+
         <h1 class="text-3xl font-bold text-center text-blue-700">UP Vision</h1>
-        <p class="text-center text-red-500">
-            Drawer Remote Control
-        </p>
+        <p class="text-center text-red-500 font-medium">Drawer Remote Control</p>
         
-        <!-- Main Command Interface -->
         <div id="mainInterface" class="space-y-4">
             <div id="drawerButtons" class="grid grid-cols-2 gap-4">
-                <button data-drawer="1" class="drawer-btn w-full bg-blue-600 text-white font-semibold p-4 rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg">Drawer 1</button>
-                <button data-drawer="2" class="drawer-btn w-full bg-green-600 text-white font-semibold p-4 rounded-lg hover:bg-green-700 transition duration-200 shadow-lg">Drawer 2</button>
-                <button data-drawer="3" class="drawer-btn w-full bg-yellow-600 text-white font-semibold p-4 rounded-lg hover:bg-yellow-700 transition duration-200 shadow-lg">Drawer 3</button>
-                <button data-drawer="4" class="drawer-btn w-full bg-red-600 text-white font-semibold p-4 rounded-lg hover:bg-red-700 transition duration-200 shadow-lg">Drawer 4</button>
+                <button data-drawer="1" class="drawer-btn w-full bg-blue-600 text-white font-semibold p-4 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shadow-md">Drawer 1</button>
+                <button data-drawer="2" class="drawer-btn w-full bg-green-600 text-white font-semibold p-4 rounded-lg hover:bg-green-700 active:scale-95 transition-all shadow-md">Drawer 2</button>
+                <button data-drawer="3" class="drawer-btn w-full bg-yellow-600 text-white font-semibold p-4 rounded-lg hover:bg-yellow-700 active:scale-95 transition-all shadow-md">Drawer 3</button>
+                <button data-drawer="4" class="drawer-btn w-full bg-red-600 text-white font-semibold p-4 rounded-lg hover:bg-red-700 active:scale-95 transition-all shadow-md">Drawer 4</button>
             </div>
-            <p id="currentCommands" class="text-xs text-gray-500 text-center pt-2">
-                Created by Kartik Patel
-            </p>
         </div>
 
         <div id="messageBox" class="p-3 mt-4 text-sm rounded-lg border-l-4 hidden"></div>
 
         <div id="logBox" class="p-3 mt-4 text-xs bg-gray-100 rounded-lg h-24 overflow-y-auto">
-            <p class="font-bold text-gray-700 mb-1">Local Status Log:</p>
-            <p id="authStatus" class="text-gray-500">Initializing Firebase...</p>
+            <p class="font-bold text-gray-700 mb-1">System Status:</p>
+            <p id="authStatus" class="text-gray-500 italic">Connecting to Firebase...</p>
         </div>
     </div>
 
+    <div id="ad-bottom-container">
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:320px;height:50px"
+             data-ad-client="ca-pub-4159833368007973"
+             data-ad-slot="4859544895"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <footer>
+        Created by Kartik Patel
+    </footer>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            serverTimestamp, 
-            setLogLevel 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Firebase Configuration (Provided by User) ---
-        // NOTE: These are mock configuration details. Replace with your actual Firebase config if needed.
         const firebaseConfig = {
             apiKey: "AIzaSyC73xJWRk8I2DrmfYRAO_LPN86XLufagYY",
             authDomain: "drawer-remote.firebaseapp.com",
             projectId: "drawer-remote",
             storageBucket: "drawer-remote.firebasestorage.app",
             messagingSenderId: "548579293210",
-            appId: "1:548579293210:web:2f3be6bca736ef762cb9a3",
-            measurementId: "G-ZZDMKERCS5"
-        };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // --- CONSTANTS ---
-        const COMMAND_COLLECTION_PATH = `/artifacts/${appId}/public/data/remote_commands`;
-        const MAX_RETRIES = 5;
-        
-        // Hardcoded Commands with Carriage Return (\r)
-        const HARDCODED_COMMANDS = {
-            1: "A\r",
-            2: "B\r",
-            3: "C\r",
-            4: "D\r",
+            appId: "1:548579293210:web:2f3be6bca736ef762cb9a3"
         };
 
-        // --- DOM Elements ---
-        const messageBox = document.getElementById('messageBox');
-        const logBox = document.getElementById('logBox');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
         const authStatus = document.getElementById('authStatus');
-        const drawerButtons = document.getElementById('drawerButtons');
+        const messageBox = document.getElementById('messageBox');
 
-        // --- Firebase Service Instances ---
-        let db;
-        let auth;
-        let userId = null;
-        let isAuthReady = false;
-
-        // --- Utility Functions ---
-
-        function appendLog(message) {
-            const p = document.createElement('p');
-            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            p.className = 'text-gray-600';
-            logBox.prepend(p);
-        }
-        
-        function displayMessage(type, message) {
-            messageBox.textContent = message;
-            messageBox.classList.remove('hidden', 'border-red-500', 'bg-red-100', 'text-red-700', 'border-green-500', 'bg-green-100', 'text-green-700');
-            
-            if (type === 'success') {
-                messageBox.classList.add('border-green-500', 'bg-green-100', 'text-green-700');
-            } else if (type === 'error') {
-                messageBox.classList.add('border-red-500', 'bg-red-100', 'text-red-700');
-            }
+        function showUIFeedback(msg, isError = false) {
+            messageBox.textContent = msg;
+            messageBox.className = `p-3 mt-4 text-sm rounded-lg border-l-4 ${isError ? 'bg-red-100 text-red-700 border-red-500' : 'bg-green-100 text-green-700 border-green-500'}`;
+            messageBox.classList.remove('hidden');
         }
 
-        // Exponential backoff helper
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        /**
-         * Attempts to sign in to Firebase with exponential backoff and retries.
-         * This improves reliability on mobile networks which might delay or block initial requests.
-         */
-        async function retrySignIn(auth, maxRetries = MAX_RETRIES) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    authStatus.textContent = `Attempting Sign In (Retry ${i + 1}/${maxRetries})...`;
-
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        // Sign in anonymously as a fallback if no custom token is provided
-                        await signInAnonymously(auth);
-                    }
-                    return; // Sign-in succeeded
-                } catch (error) {
-                    console.error(`Sign-in attempt ${i + 1} failed:`, error.message);
-                    
-                    if (i === maxRetries - 1) {
-                        authStatus.textContent = `Authentication Failed permanently. Error: ${error.code || error.message.substring(0, 30)}...`;
-                        appendLog(`CRITICAL: Final sign-in attempt failed. Full Error: ${error.message}`);
-                        // Re-throw the error to halt the process if all retries fail
-                        throw new Error("Firebase Authentication Failed permanently.");
-                    }
-                    
-                    // Calculate exponential backoff delay (1s, 2s, 4s, 8s, etc.)
-                    const delay = Math.pow(2, i) * 1000;
-                    appendLog(`Sign-in failed. Retrying in ${delay / 1000}s...`);
-                    await sleep(delay);
-                }
-            }
-        }
-        
-        // --- Core Send Command Function ---
-        async function sendCommand(commandMessage) {
-            if (!isAuthReady || !userId) {
-                displayMessage('error', 'App not ready. Please wait for authentication.');
-                return;
-            }
-
-            if (!commandMessage) return displayMessage('error', 'Command message is empty.');
-
-            displayMessage('success', `Writing command "${commandMessage.replace('\r', '\\r')}" to Cloud...`);
-            
-            try {
-                // Add the new command document to the public collection queue
-                await addDoc(collection(db, COMMAND_COLLECTION_PATH), {
-                    message: commandMessage,
-                    timestamp: serverTimestamp(),
-                    senderId: userId,
-                    processed: false 
-                });
-
-                displayMessage('success', `Command sent: "${commandMessage.replace('\r', '\\r')}". NUC will receive it.`);
-                appendLog(`Sent Command: ${commandMessage.replace('\r', '\\r')}`);
-
-            } catch (error) {
-                console.error("Firestore Write Error:", error);
-                displayMessage('error', `Failed to send command to cloud: ${error.message}`);
-            } 
-        }
-
-        // --- Event Handlers ---
-
-        // Listener for all drawer buttons
-        drawerButtons.addEventListener('click', async (e) => {
-            const button = e.target.closest('.drawer-btn');
-            if (!button) return;
-
-            const drawerId = button.dataset.drawer;
-            const command = HARDCODED_COMMANDS[drawerId];
-
-            if (command) {
-                await sendCommand(command);
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                authStatus.textContent = "✓ Connected (ID: " + user.uid.substring(0,6) + ")";
+                authStatus.className = "text-green-600 font-bold";
             } else {
-                displayMessage('error', `Command for Drawer ${drawerId} is missing from hardcoded list.`);
+                try {
+                    await signInAnonymously(auth);
+                } catch (err) {
+                    authStatus.textContent = "✗ Connection Error: " + err.code;
+                    console.error(err);
+                }
             }
         });
 
-        // --- Firebase Initialization and Authentication ---
+        document.getElementById('drawerButtons').addEventListener('click', async (e) => {
+            const btn = e.target.closest('.drawer-btn');
+            if (!btn || !auth.currentUser) return;
 
-        function initializeFirebase() {
+            const cmdMap = { 1: "A\r", 2: "B\r", 3: "C\r", 4: "D\r" };
+            const drawerId = btn.dataset.drawer;
+
             try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('Debug');
-                appendLog("Firebase Initialized.");
-
-                // Set up the state change listener first
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        isAuthReady = true;
-                        authStatus.textContent = `Authenticated. User ID: ${userId.substring(0, 8)}...`;
-                        appendLog("Authentication successful. Ready to send commands.");
-                    } else {
-                        // If user is null initially (before the first sign-in attempt finishes), start the retry process
-                        if (!isAuthReady) {
-                            await retrySignIn(auth);
-                        }
-                    }
+                showUIFeedback(`Activating Drawer ${drawerId}...`);
+                await addDoc(collection(db, `/artifacts/drawer-remote/public/data/remote_commands`), {
+                    message: cmdMap[drawerId],
+                    timestamp: serverTimestamp(),
+                    senderId: auth.currentUser.uid,
+                    processed: false 
                 });
-
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                displayMessage('error', 'Firebase Initialization Failed. Check configuration.');
-                authStatus.textContent = 'Authentication Failed.';
+                showUIFeedback(`Drawer ${drawerId} Success!`);
+            } catch (err) {
+                showUIFeedback("Command Failed: " + err.message, true);
             }
-        }
-
-        // Start the application
-        if (Object.keys(firebaseConfig).length > 0) {
-            initializeFirebase();
-        } else {
-            authStatus.textContent = 'Error: Missing Firebase configuration.';
-            displayMessage('error', 'Cannot start without Firebase config.');
-        }
-
+        });
     </script>
 </body>
 </html>
